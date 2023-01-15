@@ -37,12 +37,13 @@ mod components;
 mod pins;
 mod simulator;
 mod uart;
+mod spi;
 mod utils;
 
 use self::simulator::*;
 use std::{marker::PhantomData, path::Path};
 
-pub use self::{builder::*, components::*, pins::*, simulator::CpuDuration, uart::*, utils::*};
+pub use self::{builder::*, components::*, pins::*, simulator::CpuDuration, uart::*, spi::*, utils::*};
 
 /// Simulator's entry point; you can build it using [`AvrTester::atmega328p()`]
 /// or a similar function.
@@ -205,6 +206,10 @@ impl AvrTester {
     /// gracefully `panic!()`.
     pub fn uart1(&mut self) -> Uart<'_> {
         Uart::new(self.sim(), 1)
+    }
+
+    pub fn spi(&mut self) -> Spi<'_> {
+        Spi::new(self.sim(), 0)
     }
 
     /// Returns an object providing acccess to components (aka _peripherals_)

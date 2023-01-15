@@ -5,6 +5,7 @@ members = [
     "pins-digital",
     "timeout",
     "uart",
+    "spi",
     "xx-bits",
     "xx-eval",
 ]

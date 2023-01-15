@@ -6,6 +6,7 @@ pub enum IoCtl {
     UartGetFlags { uart: char },
     UartGetIrq { uart: char },
     UartSetFlags { uart: char },
+    SpiGetIrq { spi: char },
 }
 
 impl IoCtl {
@@ -17,6 +18,7 @@ impl IoCtl {
             IoCtl::UartGetFlags { uart } => [b'u', b'a', b'g', uart as u8],
             IoCtl::UartGetIrq { uart } => [b'u', b'a', b'r', uart as u8],
             IoCtl::UartSetFlags { uart } => [b'u', b'a', b's', uart as u8],
+            IoCtl::SpiGetIrq { spi } => [b's', b'p', b'i', spi as u8],
         };
 
         u32::from_be_bytes(ctl)
@@ -66,12 +68,18 @@ mod tests {
             expected: [b'u', b'a', b'r', b'3'],
         };
 
+        const TEST_SPI_GET_IRQ: TestCase = TestCase {
+            given: IoCtl::SpiGetIrq { spi: '3' },
+            expected: [b's', b'p', b'i', b'3'],
+        };
+
         #[test_case(TEST_ADC_GET_IRQ)]
         #[test_case(TEST_IOPORT_GET_STATE)]
         #[test_case(TEST_IOPORT_GET_IRQ)]
         #[test_case(TEST_UART_SET_FLAGS)]
         #[test_case(TEST_UART_GET_FLAGS)]
         #[test_case(TEST_UART_GET_IRQ)]
+        #[test_case(TEST_SPI_GET_IRQ)]
         fn test(case: TestCase) {
             let actual = case.given.into_ffi().to_be_bytes();
 

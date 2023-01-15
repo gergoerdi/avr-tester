@@ -15,6 +15,9 @@ mod timeout;
 #[path = "tests/uart.rs"]
 mod uart;
 
+#[path = "tests/spi.rs"]
+mod spi;
+
 #[path = "tests/xx/bits.rs"]
 mod xx_bits;
 

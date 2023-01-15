@@ -7,8 +7,9 @@ mod ioctl;
 mod logs;
 mod ports;
 mod uart;
+mod spi;
 
-use self::{adcs::*, avr::*, elf_firmware::*, ioctl::*, ports::*, uart::*};
+use self::{adcs::*, avr::*, elf_firmware::*, ioctl::*, ports::*, uart::*, spi::*};
 use simavr_ffi as ffi;
 use std::path::Path;
 
@@ -21,6 +22,7 @@ pub struct AvrSimulator {
     adcs: Option<Adcs>,
     ports: Ports,
     uarts: [Option<Uart>; 2],
+    spi: Option<Spi>,
 }
 
 impl AvrSimulator {
@@ -32,12 +34,14 @@ impl AvrSimulator {
         let ports = Ports::new();
         let uart0 = Uart::new('0').try_init(&mut avr);
         let uart1 = Uart::new('1').try_init(&mut avr);
+        let spi = Spi::new('\0').try_init(&mut avr);
 
         Self {
             avr,
             adcs,
             ports,
             uarts: [uart0, uart1],
+            spi,
         }
     }
 
@@ -48,6 +52,9 @@ impl AvrSimulator {
     pub fn run(&mut self) -> (CpuState, CpuDuration) {
         for uart in self.uarts.iter_mut().flatten() {
             uart.flush(&mut self.avr);
+        }
+        for spi in self.spi.iter_mut() {
+            spi.flush(&mut self.avr);
         }
 
         self.avr.run()
@@ -63,6 +70,14 @@ impl AvrSimulator {
 
     pub fn uart_peek(&mut self, id: usize) -> Option<u8> {
         self.uart(id).peek()
+    }
+
+    pub fn spi_send(&mut self, id: usize, byte: u8) {
+        if let Some(spi) = &mut self.spi { spi.send(byte) }
+    }
+
+    pub fn spi_recv(&mut self, id: usize) -> Option<u8> {
+        if let Some(spi) = &mut self.spi { spi.recv() } else { None }
     }
 
     pub fn set_pin_high(&mut self, port: char, pin: u8, high: bool) {
